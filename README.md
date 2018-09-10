@@ -13,7 +13,7 @@
 
 Postgres schema -> Postgraphile -> GraphQLAPI
 
-## How to start
+## How to prepare
 
 ```bash
 npm i
@@ -25,14 +25,26 @@ Modify schema inside db/createTables.js if needed.
 Create tables:
 
 ```bash
-node db/createTables.js
+cd db/
+node createTables.js
 ```
+
+## How to start
 
 Run API server:
 ```bash
 npm install -g postgraphile
 postgraphile -c postgres://postgres:dsdsdasd@127.0.0.1:5432/blue --default-role anon --token basic_auth.tokens
 ```
+
+Run Postgres PubSub service:
+
+```bash
+cd utils/
+node pubsub.js
+```
+
+OR use build.sh
 
 ## Licence
 
