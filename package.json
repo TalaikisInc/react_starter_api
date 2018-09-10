@@ -1,0 +1,20 @@
+{
+  "name": "graphile_api",
+  "version": "1.0.0",
+  "description": "GraphQL API for React Starter.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "Tadas Talaikis <info@talaikis.com>",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^6.0.0",
+    "pg": "^7.4.3",
+    "pg-pubsub": "^0.4.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.5.0",
+    "jest": "^23.5.0"
+  }
+}
