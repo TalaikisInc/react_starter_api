@@ -4,20 +4,25 @@
   "description": "GraphQL API for React Starter.",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "mocha tests/index.js"
   },
   "author": "Tadas Talaikis <info@talaikis.com>",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
+    "graphql": "^14.0.2",
     "jsonwebtoken": "^8.3.0",
     "lodash": "^4.17.10",
+    "mocha": "^5.2.0",
     "nodemailer": "^4.6.8",
     "pg": "^7.4.3",
-    "pg-pubsub": "^0.4.0"
+    "pg-pubsub": "^0.4.0",
+    "supertest": "^3.3.0"
   },
   "devDependencies": {
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
     "eslint": "^5.5.0",
     "jest": "^23.5.0"
   }

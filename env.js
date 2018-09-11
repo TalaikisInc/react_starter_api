@@ -7,6 +7,8 @@ assert.equal(typeof process.env.PG_DB, 'string', 'You should set database name')
 
 const siteTitle = 'TestSite'
 const fromEmail = 'info@dd.dd.com'
+const authenticatorPassword = process.env.AUTHENTICATOR_PASSWORD
+const jwtSecret = process.env.JWT_SECRET
 
 const emailConfig = {
   host: 'smtp.ethereal.email',
@@ -30,5 +32,7 @@ module.exports = {
   emailConfig,
   db,
   siteTitle,
-  fromEmail
+  fromEmail,
+  authenticatorPassword,
+  jwtSecret
 }
