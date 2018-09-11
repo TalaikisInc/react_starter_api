@@ -11,6 +11,8 @@
   "dependencies": {
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
+    "jsonwebtoken": "^8.3.0",
+    "lodash": "^4.17.10",
     "nodemailer": "^4.6.8",
     "pg": "^7.4.3",
     "pg-pubsub": "^0.4.0"

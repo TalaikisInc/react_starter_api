@@ -1,9 +1,10 @@
 const nodemailer = require('nodemailer')
-const { siteTitle, fromEmail } = require('../env')
+const { siteTitle, fromEmail, emailConfig } = require('../env')
+const transporter = nodemailer.createTransport(emailConfig)
 
 const getInvite = (_url, _from, _to, _link) => {
     return {
-      from: fromEmail,
+      from: `'${siteTitle}' <${fromEmail}>`,
       to: _to,
       clientUrl: `${_url}/invite/${_from}-${_link}`,
       subject: `You have been Invited to ${siteTitle}`,
@@ -11,21 +12,30 @@ const getInvite = (_url, _from, _to, _link) => {
     }
 }
 
-const sendEmail = (_body) => {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.email,
-      pass: process.env.password
-    }
-  })
+const getWelcome = (_to) => {
+  return {
+    from: `'${siteTitle}' <${fromEmail}>`,
+    to: _to,
+    subject: `Welcome to ${siteTitle}!`,
+    html: 'Welcome'
+  }
+}
 
-  transporter.sendMail(_body, (error, info) => {
+const resetPassword = (_to) => {
+  return {
+    from: `'${siteTitle}' <${fromEmail}>`,
+    to: _to,
+    subject: `Password reset ${siteTitle}!`,
+    html: 'more'
+  }
+}
+
+const sendEmail = (_body) => {
+  transporter.sendMail(body, (error, info) => {
     if (error) {
-      return console.log(error)
-    } else {
-      console.log('Email sent: ' + info.response)
+      console.error(error);
     }
+    console.log('Message %s sent: %s', info.messageId, info.response)
   })
 }
 

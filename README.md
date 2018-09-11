@@ -4,6 +4,13 @@
 
 -- In development, don't use.
 
+## TODO
+
+* change email
+* login
+* change role
+* oauth signup/signin
+
 ## Features
 
 * User management system (through JWT).

@@ -259,7 +259,7 @@ $$
         IF NOT _verified THEN
             RAISE invalid_authorization_specification USING message = 'User is not verified.';
         END IF;
-        SELECT sign(row_to_json(r), '${process.env.ENCODING_SECRET}') AS token
+        SELECT sign(row_to_json(r), '${process.env.JWT_SECRET}') AS token
             FROM (
                 SELECT _role AS role, login.email AS email,
                 EXTRACT(epoch from current_timestamp)::integer + 60*60 AS exp

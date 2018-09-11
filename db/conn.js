@@ -1,14 +1,12 @@
-const envLoc = process.env.NODE_ENV === 'production' ? '../.env' : '../.env.development'
-require('dotenv').config({ path: envLoc })
-
 const { Client } = require('pg')
+const { db } = require('../env')
 
 const client = new Client({
-  user: process.env.PG_USER,
-  host: process.env.PG_SERVER,
-  database: process.env.PG_DB,
-  password: process.env.PG_PASS,
-  port: 5432
+  user: db.user,
+  host: db.host,
+  database: db.database,
+  password: db.password,
+  port: db.port
 })
 
 client.connect()
