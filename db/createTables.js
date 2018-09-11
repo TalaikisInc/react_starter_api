@@ -6,6 +6,7 @@ const path = require('path')
 assert.equal(typeof process.env.ENCODING_SECRET, 'string', 'You should set database encryption password')
 
 const sql = `
+DROP ROLE IF EXISTS anon, member, authenticator, postgraphile;
 CREATE SCHEMA IF NOT EXISTS basic_auth;
 CREATE SCHEMA IF NOT EXISTS content;
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
@@ -18,12 +19,12 @@ CREATE TABLE IF NOT EXISTS basic_auth.users (
     id uuid PRIMARY KEY default uuid_generate_v1mc(),
     email TEXT UNIQUE CHECK (email ~* '^.+@.+\..+$'),
     password TEXT NOT NULL,
-    link TEXT NOT NULL DEFAULT '',
+    link TEXT,
     role name NOT NULL,
     verified BOOLEAN NOT NULL DEFAULT false,
-    first_name text CHECK (char_length(first_name) < 80),
-    last_name text CHECK (char_length(last_name) < 80),
-    about text DEFAULT '',
+    first_name TEXT CHECK (char_length(first_name) < 80),
+    last_name TEXT CHECK (char_length(last_name) < 80),
+    about TEXT,
     created_at TIMESTAMP DEFAULT current_timestamp,
     updated_at TIMESTAMP DEFAULT current_timestamp
 );
@@ -108,7 +109,7 @@ CREATE TRIGGER post_updated_at BEFORE UPDATE
     EXECUTE PROCEDURE basic_auth.set_updated_at();
 
 -- ---------------------------------------------------------------------------
--- Tokens
+-- UUID Tokens
 -- ---------------------------------------------------------------------------
 
 DROP TYPE IF EXISTS token_type_enum CASCADE;
@@ -121,6 +122,13 @@ CREATE TABLE IF NOT EXISTS basic_auth.tokens (
     ON DELETE CASCADE ON UPDATE CASCADE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT current_date
 );
+
+-- ---------------------------------------------------------------------------
+-- JWT Tokens
+-- ---------------------------------------------------------------------------
+
+DROP TYPE IF EXISTS basic_auth.jwt_claims CASCADE;
+CREATE TYPE basic_auth.jwt_claims AS (role text, email text, exp integer);
 
 -- ---------------------------------------------------------------------------
 -- Roles
@@ -234,13 +242,13 @@ $$
         FROM regexp_split_to_array(token, '\.') r;
 $$;
 
-CREATE OR REPLACE FUNCTION login(email text, password text) RETURNS basic_auth.tokens LANGUAGE plpgsql AS
+CREATE OR REPLACE FUNCTION login(email text, password text) RETURNS basic_auth.jwt_claims LANGUAGE plpgsql AS
 $$
     DECLARE
         _role name;
         _verified boolean;
         _email text;
-        result basic_auth.tokens;
+        result basic_auth.jwt_claims;
     BEGIN
         SELECT basic_auth.user_role(email, password) INTO _role;
         IF _role IS NULL THEN
@@ -261,6 +269,8 @@ $$
     END;
 $$;
 
+-- Prevent current_setting('postgrest.claims.email') from raising
+-- an exception if the setting is not present. Default it to ''.
 ALTER DATABASE ${process.env.PG_DB} SET postgrest.claims.email TO '';
 
 CREATE OR REPLACE FUNCTION basic_auth.current_email() RETURNS text LANGUAGE plpgsql AS
@@ -269,18 +279,6 @@ $$
         return current_setting('postgrest.claims.email');
     END;
 $$;
-
-CREATE ROLE anon;
-CREATE ROLE member;
-CREATE ROLE authenticator NOINHERIT;
-GRANT anon TO authenticator;
-GRANT anon TO member;
-GRANT USAGE ON SCHEMA public, basic_auth TO anon;
-GRANT SELECT ON TABLE pg_authid, basic_auth.users TO anon;
-GRANT EXECUTE ON FUNCTION login(text, text) TO anon;
-CREATE ROLE postgraphile login password '${process.env.POSTGRAPHILE_PASSWORD}';
-GRANT anon TO postgraphile;
-GRANT authenticator TO postgraphile;
 
 -- ---------------------------------------------------------------------------
 -- Password Reset
@@ -444,7 +442,7 @@ $$ LANGUAGE SQL;
 -- Validate user
 -- ---------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION basic_auth.validate(tok uuid) RETURNS void LANGUAGE plpgsql AS
+CREATE OR REPLACE FUNCTION validate(tok uuid) RETURNS void LANGUAGE plpgsql AS
 $$
     DECLARE
         _verified boolean;
@@ -481,6 +479,17 @@ END;
 $$;
 
 CREATE EVENT TRIGGER ddl_postgres ON ddl_command_end EXECUTE PROCEDURE public.notify_ddl();
+
+CREATE ROLE anon;
+CREATE ROLE member;
+CREATE ROLE authenticator NOINHERIT;
+GRANT anon TO authenticator;
+GRANT anon TO member;
+GRANT USAGE ON SCHEMA public, basic_auth TO anon;
+GRANT SELECT ON TABLE pg_authid, basic_auth.users TO anon;
+GRANT EXECUTE ON FUNCTION login(text, text) TO anon;
+GRANT EXECUTE ON FUNCTION signup(text, text) TO anon;
+GRANT EXECUTE ON FUNCTION validate(uuid) TO anon;
 `
 
 client.query(sql, (err, res) => {
