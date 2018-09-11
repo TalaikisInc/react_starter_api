@@ -1,9 +1,6 @@
 const client = require('./conn')
-const assert = require('assert')
 const fs = require('fs')
 const path = require('path')
-
-assert.equal(typeof process.env.ENCODING_SECRET, 'string', 'You should set database encryption password')
 
 const sql = `
 DROP ROLE IF EXISTS anon, member, authenticator, postgraphile;
@@ -259,12 +256,7 @@ $$
         IF NOT _verified THEN
             RAISE invalid_authorization_specification USING message = 'User is not verified.';
         END IF;
-        SELECT sign(row_to_json(r), '${process.env.JWT_SECRET}') AS token
-            FROM (
-                SELECT _role AS role, login.email AS email,
-                EXTRACT(epoch from current_timestamp)::integer + 60*60 AS exp
-            ) r
-            INTO result;
+        SELECT _role as role, login.email as email, extract(epoch from now())::integer + 60*60 as exp INTO result;
         RETURN result;
     END;
 $$;
