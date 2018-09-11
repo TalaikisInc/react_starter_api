@@ -2,18 +2,20 @@
 
 ## Status
 
--- In development, don't use.
+-- In development, don't use due to breaking changes.
 
 ## TODO
 
 * change email
-* login
 * change role
 * oauth signup/signin
+* return user data after login and update
+* generate ref. link
 
 ## Features
 
 * User management system (through JWT).
+* Referral system
 * CMS system (maybe???)
 
 ## How that does work
@@ -41,7 +43,7 @@ node createTables.js
 Run API server:
 ```bash
 npm install -g postgraphile
-postgraphile -c postgres://postgres:dsdsdasd@127.0.0.1:5432/blue
+postgraphile -c postgres://postgres:dsdsdasd@127.0.0.1:5432/blue -j --watch
 
 # For all CLI options:
 # https://www.graphile.org/postgraphile/usage-cli/
@@ -86,6 +88,58 @@ Edit postgrest.conf, then:
 
 ```bash
 ./docs.sh project_name
+```
+
+## Example GraphQL requests
+
+### Signup
+
+```graphql
+mutation {
+  signup(input: {email: "foo2@example.com", password: "123456"}) {
+    clientMutationId
+  }
+}
+```
+
+### Signin
+
+```graphql
+mutation {
+  login(input: {email: "foo2@example.com", password: "123456"}) {
+    json
+  }
+}
+```
+
+### Validate
+
+```graphql
+mutation {
+  validate(input: {tok: "fbd10f39-88cf-4850-b599-8df0b43aa2ac"}) {
+    clientMutationId
+  }
+}
+```
+
+### Update user
+
+```graphql
+mutation {
+  updateUserInfo(input: {email: "foo2@example.com", password: "123456", firstName: "First", lastName: "Last", about: "About me"}) {
+    clientMutationId
+  }
+}
+```
+
+### Delete user
+
+```graphql
+mutation {
+  deleteUserAccount(input: {email: "foo2@example.com", password: "123456"}) {
+    clientMutationId
+  }
+}
 ```
 
 ## Licence

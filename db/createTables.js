@@ -1,6 +1,5 @@
 const client = require('./conn')
-const fs = require('fs')
-const path = require('path')
+const { authenticatorPassword, jwtSecret, db } = require('../env')
 
 const sql = `
 DROP ROLE IF EXISTS anon, member, authenticator, postgraphile;
@@ -156,7 +155,7 @@ CREATE OR REPLACE FUNCTION basic_auth.encrypt_password() RETURNS trigger LANGUAG
 $$
     BEGIN
         IF tg_op = 'INSERT' or new.password <> old.password then
-            new.password = crypt(new.password, gen_salt('bf'));
+            new.password = crypt(new.password, gen_salt('bf', 8));
         END IF;
         RETURN new;
     END;
@@ -169,13 +168,13 @@ CREATE TRIGGER encrypt_password
     FOR EACH ROW
     EXECUTE PROCEDURE basic_auth.encrypt_password();
     
-CREATE OR REPLACE FUNCTION basic_auth.user_role(email text, password text) RETURNS name LANGUAGE plpgsql AS
+CREATE OR REPLACE FUNCTION basic_auth.authenticate_user(email text, password text) RETURNS name LANGUAGE plpgsql AS
 $$
     BEGIN
         return (
             SELECT role FROM basic_auth.users
-                WHERE users.email = user_role.email
-                AND users.password = crypt(user_role.password, users.password)
+                WHERE users.email = authenticate_user.email
+                AND users.password = crypt(authenticate_user.password, users.password)
         );
     END;
 $$;
@@ -239,31 +238,92 @@ $$
         FROM regexp_split_to_array(token, '\.') r;
 $$;
 
-CREATE OR REPLACE FUNCTION login(email text, password text) RETURNS basic_auth.jwt_claims LANGUAGE plpgsql AS
+CREATE OR REPLACE FUNCTION is_json(input_text varchar) RETURNS boolean AS $$
+    DECLARE
+        maybe_json json;
+    BEGIN
+        BEGIN
+            maybe_json := input_text;
+            EXCEPTION WHEN others THEN
+                RETURN FALSE;
+        END;
+
+        RETURN true;
+    END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION login(email text, password text) RETURNS json LANGUAGE plpgsql AS
 $$
     DECLARE
         _role name;
+        _id uuid;
         _verified boolean;
         _email text;
-        result basic_auth.jwt_claims;
+        _obj json;
+        _signed text;
+        result json;
     BEGIN
-        SELECT basic_auth.user_role(email, password) INTO _role;
+        SELECT basic_auth.authenticate_user(email, password) INTO _role;
         IF _role IS NULL THEN
-            RAISE invalid_password USING message = 'Invalid user or password.';
+            RAISE invalid_password USING message = 'Invalid role.';
         END IF;
         _email := email;
-        SELECT verified FROM basic_auth.users AS u WHERE u.email=_email LIMIT 1 INTO _verified;
+        SELECT verified FROM basic_auth.users AS u WHERE u.email = _email LIMIT 1 INTO _verified;
         IF NOT _verified THEN
             RAISE invalid_authorization_specification USING message = 'User is not verified.';
         END IF;
-        SELECT _role as role, login.email as email, extract(epoch from now())::integer + 60*60 as exp INTO result;
+        SELECT id FROM basic_auth.users AS u WHERE u.email = _email LIMIT 1 INTO _id;
+        SELECT json_build_object('id', _id, 'email', _email, 'expiry', extract(epoch from now())::integer + 60*60) INTO _obj;
+        SELECT sign(_obj, '${jwtSecret}') INTO _signed;
+        SELECT json_build_object('token', _signed)  INTO result;
         RETURN result;
+    END;
+$$;
+
+-- ---------------------------------------------------------------------------
+-- Delete user
+-- ---------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION delete_user_account(email text, password text) RETURNS void LANGUAGE plpgsql AS
+$$
+    DECLARE
+        _role name;
+    BEGIN
+        SELECT basic_auth.authenticate_user(email, password) INTO _role;
+        IF _role IS NULL THEN
+            RAISE invalid_password USING message = 'Invalid role.';
+        END IF;
+        DELETE FROM basic_auth.users WHERE email = old.email;
+    END;
+$$;
+
+
+-- ---------------------------------------------------------------------------
+-- Update user
+-- ---------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION update_user_info(email text, password text, first_name text, last_name text, about text) RETURNS void LANGUAGE plpgsql AS
+$$
+    DECLARE
+        _role name;
+    BEGIN
+        SELECT basic_auth.authenticate_user(email, password) INTO _role;
+        IF _role IS NULL THEN
+            RAISE invalid_password USING message = 'Invalid role.';
+        END IF;
+        WITH c AS (SELECT first_name, last_name, about FROM basic_auth.users)
+            UPDATE basic_auth.users SET
+                first_name = COALESCE(first_name, c.first_name),
+                last_name = COALESCE(last_name, c.last_name),
+                about = COALESCE(about, c.about)
+            FROM c
+                WHERE c.email = old.email;
     END;
 $$;
 
 -- Prevent current_setting('postgrest.claims.email') from raising
 -- an exception if the setting is not present. Default it to ''.
-ALTER DATABASE ${process.env.PG_DB} SET postgrest.claims.email TO '';
+ALTER DATABASE ${db.database} SET postgrest.claims.email TO '';
 
 CREATE OR REPLACE FUNCTION basic_auth.current_email() RETURNS text LANGUAGE plpgsql AS
 $$
@@ -306,7 +366,7 @@ $$
                 WHERE tokens.email = reset_password.email
                 AND tokens.token = reset_password.token
                 AND token_type = 'reset') THEN
-            UPDATE basic_auth.users SET pass=reset_password.password
+            UPDATE basic_auth.users SET password = reset_password.password
                 WHERE users.email = reset_password.email;
             DELETE FROM basic_auth.tokens
                 WHERE tokens.email = reset_password.email
@@ -395,7 +455,8 @@ $$
     BEGIN
         IF tg_op = 'INSERT' THEN
             PERFORM basic_auth.clearance_for_role(new.role);
-            INSERT INTO basic_auth.users (role, password, email, verified) values (new.role, new.password, new.email, coalesce(new.verified, false));
+            INSERT INTO basic_auth.users (role, password, email, verified)
+                VALUES (new.role, new.password, new.email, COALESCE(new.verified, false));
             RETURN new;
         ELSIF tg_op = 'UPDATE' THEN
             PERFORM basic_auth.clearance_for_role(new.role);
@@ -403,12 +464,12 @@ $$
                 email = new.email,
                 role = new.role,
                 password = new.password,
-                verified = coalesce(new.verified, old.verified, false)
+                verified = COALESCE(new.verified, old.verified, false)
                 WHERE email = old.email;
             PERFORM new;
         ELSIF tg_op = 'DELETE' THEN
             DELETE FROM basic_auth.users
-            WHERE basic_auth.email = old.email;
+                WHERE email = old.email;
             RETURN null;
         END IF;
     END
@@ -427,7 +488,7 @@ CREATE trigger update_users
 
 CREATE OR REPLACE FUNCTION signup(email text, password text) RETURNS void AS
 $$
-    INSERT INTO basic_auth.users (email, password, role) VALUES (signup.email, signup.password, 'member');
+    INSERT INTO basic_auth.users (email, password, role) VALUES (lower(signup.email), signup.password, 'member');
 $$ LANGUAGE SQL;
 
 -- ---------------------------------------------------------------------------
@@ -474,14 +535,18 @@ CREATE EVENT TRIGGER ddl_postgres ON ddl_command_end EXECUTE PROCEDURE public.no
 
 CREATE ROLE anon;
 CREATE ROLE member;
-CREATE ROLE authenticator NOINHERIT;
+CREATE ROLE authenticator NOINHERIT LOGIN PASSWORD '${authenticatorPassword}';
 GRANT anon TO authenticator;
 GRANT anon TO member;
 GRANT USAGE ON SCHEMA public, basic_auth TO anon;
 GRANT SELECT ON TABLE pg_authid, basic_auth.users TO anon;
 GRANT EXECUTE ON FUNCTION login(text, text) TO anon;
-GRANT EXECUTE ON FUNCTION signup(text, text) TO anon;
-GRANT EXECUTE ON FUNCTION validate(uuid) TO anon;
+GRANT EXECUTE ON FUNCTION
+    signup(text, text),
+    validate(uuid),
+    delete_user_account(text, text),
+    update_user_info(text, text, text, text, text)
+    TO anon;
 `
 
 client.query(sql, (err, res) => {
