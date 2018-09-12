@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS basic_auth.users (
     verified BOOLEAN NOT NULL DEFAULT false,
     first_name TEXT CHECK (char_length(first_name) < 80),
     last_name TEXT CHECK (char_length(last_name) < 80),
+    photo TEXT,
     bio TEXT,
     google_id TEXT UNIQUE,
     twitter_id TEXT UNIQUE,
