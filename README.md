@@ -7,7 +7,6 @@
 ## TODO
 
 * change role
-* fix update, delete user
 * oauth signup/signin
 * return user data after login and update
 * autogenerate ref. link
@@ -129,7 +128,7 @@ mutation {
 
 ```graphql
 mutation {
-  updateUserInfo(input: {email: "foo2@example.com", password: "123456", firstName: "First", lastName: "Last", about: "About me"}) {
+  updateUserInfo(input: {mail: "foo2@example.com", password: "123456", firstname: "First", lastname: "Last", about: "About me"}) {
     clientMutationId
   }
 }
@@ -139,7 +138,7 @@ mutation {
 
 ```graphql
 mutation {
-  deleteUserAccount(input: {email: "foo2@example.com", password: "123456"}) {
+  deleteUserAccount(input: {mail: "foo2@example.com", password: "123456"}) {
     clientMutationId
   }
 }

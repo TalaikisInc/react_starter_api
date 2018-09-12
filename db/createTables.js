@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS basic_auth.users (
     verified BOOLEAN NOT NULL DEFAULT false,
     first_name TEXT CHECK (char_length(first_name) < 80),
     last_name TEXT CHECK (char_length(last_name) < 80),
-    about TEXT,
+    bio TEXT,
     google_id TEXT UNIQUE,
     twitter_id TEXT UNIQUE,
     github_id TEXT UNIQUE,
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS content.authors (
     id uuid PRIMARY KEY default uuid_generate_v1mc(),
     first_name text CHECK (char_length(first_name) < 80),
     last_name text CHECK (char_length(last_name) < 80),
-    about text DEFAULT '',
+    bio text DEFAULT '',
     created_at TIMESTAMP DEFAULT current_timestamp,
     updated_at TIMESTAMP DEFAULT current_timestamp
 );
@@ -309,16 +309,16 @@ $$;
 -- Delete user
 -- ---------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION delete_user_account(email text, password text) RETURNS void LANGUAGE plpgsql AS
+CREATE OR REPLACE FUNCTION delete_user_account(mail text, password text) RETURNS void LANGUAGE plpgsql AS
 $$
     DECLARE
         _role name;
     BEGIN
-        SELECT basic_auth.authenticate_user(email, password) INTO _role;
+        SELECT basic_auth.authenticate_user(mail, password) INTO _role;
         IF _role IS NULL THEN
             RAISE invalid_password USING message = 'Invalid role.';
         END IF;
-        DELETE FROM basic_auth.users WHERE email = old.email;
+        DELETE FROM basic_auth.users WHERE email = mail;
     END;
 $$;
 
@@ -326,7 +326,7 @@ $$;
 -- Update user
 -- ---------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION update_user_info(_email text, password text, firstName text, lastName text, _about text) RETURNS void LANGUAGE plpgsql AS
+CREATE OR REPLACE FUNCTION update_user_info(mail text, password text, firstName text, lastName text, about text) RETURNS void LANGUAGE plpgsql AS
 $$
     DECLARE
         _role name;
@@ -338,8 +338,8 @@ $$
         UPDATE basic_auth.users SET
             first_name = update_user_info.firstName,
             last_name = update_user_info.lastName,
-            about = update_user_info._about
-            WHERE email = update_user_info._email;
+            bio = update_user_info.about
+            WHERE email = update_user_info.mail;
     END;
 $$;
 
