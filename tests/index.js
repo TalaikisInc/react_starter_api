@@ -65,6 +65,18 @@ describe('user management', () => {
       })
   })
 
+  it('doesn\'t allow to register for existing user', (done) => {
+    request.post('graphql')
+      .send({ query: 'mutation { signup(input: { email: "foo2@example.com", password: "123456" }) { clientMutationId } }'})
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err)
+        console.log(tok)
+        res.body.errors[0].should.have.property('message')
+        done()
+      })
+  })
+
   /*it('password reset works for anyone', (done) => {
   })*/
 /*
@@ -110,9 +122,9 @@ const service = {
 }
 
 const routes = {
-  route: { route: 'graphql', method: 'post', data: { query: `mutation { signup(input: { email: "${faker.internet.email()}", password: "${faker.internet.password()}" }) { clientMutationId } }` } },
+  route: { name: 'Registration', route: 'graphql', method: 'post', data: { query: `mutation { signup(input: { email: "${faker.internet.email()}", password: "${faker.internet.password()}" }) { clientMutationId } }` } },
 }
 
 apiBenchmark.measure(service, routes, (err, res) => {
-  console.log(res.server.route.stats)
+  console.log(`Mean for ${res.server.route.name}: ${res.server.route.stats.mean}`)
 })

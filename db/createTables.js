@@ -281,6 +281,14 @@ $$
 $$;
 
 -- ---------------------------------------------------------------------------
+-- Change email
+-- ---------------------------------------------------------------------------
+
+-- ---------------------------------------------------------------------------
+-- Change role
+-- ---------------------------------------------------------------------------
+
+-- ---------------------------------------------------------------------------
 -- Delete user
 -- ---------------------------------------------------------------------------
 
@@ -296,7 +304,6 @@ $$
         DELETE FROM basic_auth.users WHERE email = old.email;
     END;
 $$;
-
 
 -- ---------------------------------------------------------------------------
 -- Update user
@@ -495,25 +502,24 @@ $$ LANGUAGE SQL;
 -- Validate user
 -- ---------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION validate(tok uuid) RETURNS void LANGUAGE plpgsql AS
+CREATE OR REPLACE FUNCTION validate(tok uuid) RETURNS text LANGUAGE plpgsql AS
 $$
     DECLARE
         _verified boolean;
-        _email boolean;
+        _email text;
+        _val text;
     BEGIN
-            SELECT exists (SELECT 1 FROM basic_auth.tokens WHERE token = tok LIMIT 1) INTO _email;
-            IF _email IS true THEN
-                SELECT verified FROM basic_auth.users AS u WHERE u.email = _email LIMIT 1 INTO _verified;
-
-                IF NOT _verified THEN
-                    UPDATE basic_auth.users SET
-                        verified = true
-                        WHERE email = _email;
-                    DELETE FROM basic_auth.tokens WHERE email = _email;
-                END IF;
+            SELECT COALESCE((SELECT 1 FROM basic_auth.tokens WHERE token = tok LIMIT 1), 0) INTO _val;
+            IF _val = '1' THEN
+                SELECT email FROM basic_auth.tokens WHERE token = validate.tok LIMIT 1 INTO _email;
+                UPDATE basic_auth.users SET
+                    verified = true
+                    WHERE email = _email;
+                DELETE FROM basic_auth.tokens WHERE token = validate.tok;
             ELSE
                 RAISE invalid_authorization_specification USING message = 'No such validation token.';
             END IF;
+            RETURN _email;
     END;
 $$;
 

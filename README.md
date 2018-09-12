@@ -6,7 +6,6 @@
 
 ## TODO
 
-* change email
 * change role
 * oauth signup/signin
 * return user data after login and update
