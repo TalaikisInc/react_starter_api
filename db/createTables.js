@@ -21,9 +21,20 @@ CREATE TABLE IF NOT EXISTS basic_auth.users (
     first_name TEXT CHECK (char_length(first_name) < 80),
     last_name TEXT CHECK (char_length(last_name) < 80),
     about TEXT,
+    google_id TEXT UNIQUE,
+    twitter_id TEXT UNIQUE,
+    github_id TEXT UNIQUE,
+    facebook_id TEXT UNIQUE,
+    linkedin_id TEXT UNIQUE,
+    stripe_id TEXT,
     created_at TIMESTAMP DEFAULT current_timestamp,
     updated_at TIMESTAMP DEFAULT current_timestamp
 );
+
+CREATE OR REPLACE FUNCTION basic_auth.current_user_id() RETURNS integer AS
+$$
+    SELECT nullif(current_setting('basic_auth.jwt.claims.user_id', true), '')::integer;
+$$ LANGUAGE SQL STABLE;
 
 --CREATE OR REPLACE FUNCTION basic_auth.full_name(user basic_auth.users) RETURNS text AS
 --$$
@@ -315,33 +326,31 @@ $$;
 -- Update user
 -- ---------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION update_user_info(email text, password text, first_name text, last_name text, about text) RETURNS void LANGUAGE plpgsql AS
+CREATE OR REPLACE FUNCTION update_user_info(_email text, password text, firstName text, lastName text, _about text) RETURNS void LANGUAGE plpgsql AS
 $$
     DECLARE
         _role name;
     BEGIN
-        SELECT basic_auth.authenticate_user(email, password) INTO _role;
+        SELECT basic_auth.authenticate_user(_email, password) INTO _role;
         IF _role IS NULL THEN
             RAISE invalid_password USING message = 'Invalid role.';
         END IF;
-        WITH c AS (SELECT first_name, last_name, about FROM basic_auth.users)
-            UPDATE basic_auth.users SET
-                first_name = COALESCE(first_name, c.first_name),
-                last_name = COALESCE(last_name, c.last_name),
-                about = COALESCE(about, c.about)
-            FROM c
-                WHERE c.email = old.email;
+        UPDATE basic_auth.users SET
+            first_name = update_user_info.firstName,
+            last_name = update_user_info.lastName,
+            about = update_user_info._about
+            WHERE email = update_user_info._email;
     END;
 $$;
 
--- Prevent current_setting('postgrest.claims.email') from raising
+-- Prevent current_setting('basic_auth.jwt.claims.email') from raising
 -- an exception if the setting is not present. Default it to ''.
-ALTER DATABASE ${db.database} SET postgrest.claims.email TO '';
+ALTER DATABASE ${db.database} SET basic_auth.jwt.claims.email TO '';
 
 CREATE OR REPLACE FUNCTION basic_auth.current_email() RETURNS text LANGUAGE plpgsql AS
 $$
     BEGIN
-        return current_setting('postgrest.claims.email');
+        return current_setting('basic_auth.jwt.claims.email');
     END;
 $$;
 

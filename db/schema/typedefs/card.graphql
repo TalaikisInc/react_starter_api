@@ -1,0 +1,21 @@
+type Card {
+  id: String!
+  brand: String!
+  expiryMonth: Int!
+  expiryYear: Int!
+  last4: String!
+}
+
+type Query {
+  cardsByCustomerId(id: UUID): [Card]
+}
+
+type Mutation {
+  storeCard(userId: UUID!, token: String!): Card
+  removeCard(userId: UUID!, cardId: String!): Boolean
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+}

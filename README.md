@@ -18,6 +18,7 @@
 * User management system (through JWT).
 * Referral system
 * CMS system (??)
+* payment system (??)
 * Blockchain functions (??)
 
 ## How that does work

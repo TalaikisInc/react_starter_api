@@ -9,14 +9,27 @@
   "author": "Tadas Talaikis <info@talaikis.com>",
   "license": "ISC",
   "dependencies": {
+    "apollo-fetch": "^0.7.0",
+    "apollo-server-express": "^2.0.6",
+    "body-parser": "^1.18.3",
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
+    "express-session": "^1.15.6",
     "graphql": "^14.0.2",
+    "graphql-tools": "^3.1.1",
     "jsonwebtoken": "^8.3.0",
+    "knex": "^0.15.2",
     "lodash": "^4.17.10",
     "nodemailer": "^4.6.8",
+    "passport": "^0.4.0",
+    "passport-facebook": "^2.1.1",
+    "passport-github": "^1.1.0",
+    "passport-google-oauth": "^1.0.0",
+    "passport-linkedin-oauth2": "^1.5.0",
+    "passport-twitter": "^1.0.4",
     "pg": "^7.4.3",
-    "pg-pubsub": "^0.4.0"
+    "pg-pubsub": "^0.4.0",
+    "stripe": "^6.10.0"
   },
   "devDependencies": {
     "api-benchmark": "^0.5.0",
