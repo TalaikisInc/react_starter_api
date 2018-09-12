@@ -10,13 +10,15 @@
 * change role
 * oauth signup/signin
 * return user data after login and update
-* generate ref. link
+* autogenerate ref. link
+* programatic tests
 
 ## Features
 
 * User management system (through JWT).
 * Referral system
-* CMS system (maybe???)
+* CMS system (??)
+* Blockchain functions (??)
 
 ## How that does work
 

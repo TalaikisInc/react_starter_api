@@ -430,7 +430,7 @@ CREATE TRIGGER send_validation
     EXECUTE PROCEDURE basic_auth.send_validation();
 
 -- ---------------------------------------------------------------------------
--- Update User
+-- Check role
 -- ---------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION basic_auth.clearance_for_role(u name) RETURNS void AS
@@ -499,10 +499,10 @@ CREATE OR REPLACE FUNCTION validate(tok uuid) RETURNS void LANGUAGE plpgsql AS
 $$
     DECLARE
         _verified boolean;
-        _email text;
+        _email boolean;
     BEGIN
-            SELECT email FROM basic_auth.tokens WHERE token = tok LIMIT 1 INTO _email;
-            IF _email IS NOT NULL THEN
+            SELECT exists (SELECT 1 FROM basic_auth.tokens WHERE token = tok LIMIT 1) INTO _email;
+            IF _email IS true THEN
                 SELECT verified FROM basic_auth.users AS u WHERE u.email = _email LIMIT 1 INTO _verified;
 
                 IF NOT _verified THEN
