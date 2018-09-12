@@ -7,10 +7,10 @@
 ## TODO
 
 * change role
+* fix update, delete user
 * oauth signup/signin
 * return user data after login and update
 * autogenerate ref. link
-* programatic tests
 
 ## Features
 
@@ -142,6 +142,23 @@ mutation {
     clientMutationId
   }
 }
+```
+
+### Password reset
+
+```graphql
+mutation {
+  requestPasswordReset(input: {email: "foo2@example.com"}) {
+    clientMutationId
+  }
+}
+
+mutation {
+  resetPassword(input: {email: "foo2@example.com", token: "1644a2aa-ded2-47f3-945c-e79399015dc7", password: "65321"}) {
+    clientMutationId
+  }
+}
+
 ```
 
 ## Tests

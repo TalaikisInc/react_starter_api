@@ -273,9 +273,15 @@ $$
             RAISE invalid_authorization_specification USING message = 'User is not verified.';
         END IF;
         SELECT id FROM basic_auth.users AS u WHERE u.email = _email LIMIT 1 INTO _id;
-        SELECT json_build_object('id', _id, 'email', _email, 'expiry', extract(epoch from now())::integer + 60*60) INTO _obj;
+        SELECT json_build_object(
+            'id', _id,
+            'email', _email,
+            'expiry', extract(epoch from now())::integer + 60*60
+            ) INTO _obj;
         SELECT sign(_obj, '${jwtSecret}') INTO _signed;
-        SELECT json_build_object('token', _signed)  INTO result;
+        SELECT json_build_object(
+            'token', _signed
+            )  INTO result;
         RETURN result;
     END;
 $$;

@@ -87,9 +87,6 @@ describe('user management', () => {
       })
   })
 
-  /*it('returns correct data for user', (done) => {
-  })*/
-
   /*it('password reset works for anyone', (done) => {
   })*/
 /*

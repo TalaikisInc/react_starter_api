@@ -12,3 +12,11 @@ pubsubInstance.addChannel('validate', (payload) => {
   token_type: 'validation' }
   */
 })
+
+pubsubInstance.addChannel('reset', (payload) => {
+  console.log(payload)
+  /*
+  { email: 'foo2@example.com',
+  token: '1644a2aa-ded2-47f3-945c-e79399015dc7',
+  token_type: 'reset' }
+})
