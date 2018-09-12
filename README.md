@@ -7,6 +7,7 @@
 ## TODO
 
 * change role
+* change email
 * oauth signup/signin
 * return user data after login and update
 * autogenerate ref. link
