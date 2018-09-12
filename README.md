@@ -15,6 +15,7 @@
 
 ## Features
 
+* Benchmarking along with the tests.
 * User management system (through JWT).
 * Referral system
 * CMS system (??)
