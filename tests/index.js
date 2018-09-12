@@ -23,12 +23,9 @@ describe('user management', () => {
       })
   })
 
-  /*it('return correct data for user', (done) => {
-  })*/
-
   it('signup works for anyone', (done) => {
     request.post('graphql')
-      .send({ query: 'mutation { signup(input: { email: "foo2@example.com", password: "123456" }) { clientMutationId } }' })
+      .send({ query: 'mutation { signup(input: { email: "foo3@example.com", password: "123456" }) { clientMutationId } }' })
       .expect(200)
       .end((err, res) => {
         if (err) return done(err)
@@ -54,9 +51,9 @@ describe('user management', () => {
 
   it('doesn\'t allow to register for existing user', (done) => {
     request.post('graphql')
-      .send({ query: 'mutation { signup(input: { email: "foo2@example.com", password: "123456" }) { clientMutationId } }'})
+      .send({ query: 'mutation { signup(input: { email: "foo4@example.com", password: "123456" }) { clientMutationId } }'})
       .expect(200)
-      .send({ query: 'mutation { signup(input: { email: "foo2@example.com", password: "123456" }) { clientMutationId } }'})
+      .send({ query: 'mutation { signup(input: { email: "foo4@example.com", password: "123456" }) { clientMutationId } }'})
       .expect(200)
       .end((err, res) => {
         if (err) return done(err)
@@ -65,17 +62,33 @@ describe('user management', () => {
       })
   })
 
-  it('doesn\'t allow to register for existing user', (done) => {
+  it('login ok for non-users', (done) => {
     request.post('graphql')
-      .send({ query: 'mutation { signup(input: { email: "foo2@example.com", password: "123456" }) { clientMutationId } }'})
+      .send({ query: 'mutation { signup(input: { email: "foo5@example.com", password: "123456" }) { clientMutationId } }' })
+      .expect(200)
+      .send({ query: 'mutation {login(input: {email: "foo5@example.com", password: "123456"}) {json}}' })
       .expect(200)
       .end((err, res) => {
         if (err) return done(err)
-        console.log(tok)
+        res.login.json.should.have.property('token')
+        done()
+      })
+  })
+
+  it('login not ok for non-users', (done) => {
+    request.post('graphql')
+      .send({ query: 'mutation {login(input: {email: "fake4@fake.g", password: "123456"}) {json}}' })
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err)
+        console.log(res.body)
         res.body.errors[0].should.have.property('message')
         done()
       })
   })
+
+  /*it('returns correct data for user', (done) => {
+  })*/
 
   /*it('password reset works for anyone', (done) => {
   })*/
@@ -86,13 +99,7 @@ describe('user management', () => {
   
     it('user delete works', (done) => {
     })
-
-    it('login ok for users', (done) => {
-    })
-  
-    it('login not ok for non-users', (done) => {
-    })
-  
+    
     it('validation works for new users', (done) => {
     })
   

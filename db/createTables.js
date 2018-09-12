@@ -519,7 +519,7 @@ $$
             ELSE
                 RAISE invalid_authorization_specification USING message = 'No such validation token.';
             END IF;
-            RETURN _email;
+            RETURN _val;
     END;
 $$;
 

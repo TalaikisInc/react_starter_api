@@ -144,6 +144,12 @@ mutation {
 }
 ```
 
+## Tests
+
+```bash
+npm run test
+```
+
 ## Licence
 
 MIT
