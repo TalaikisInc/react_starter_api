@@ -98,6 +98,12 @@ describe('user management', () => {
       })
   })
 
+  it('user update works', (done) => {
+  })
+
+  it('user delete works', (done) => {
+  })
+
   /*
   it('verification should work', (done) => {
   })
@@ -127,12 +133,6 @@ describe('user management', () => {
   */
 /*
   describe('existing users', () => {
-    it('user update works', (done) => {
-    })
-  
-    it('user delete works', (done) => {
-    })
-
     it('change email available for anyone', (done) => {
     })
 
