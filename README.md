@@ -2,9 +2,11 @@
 
 ## How that does work
 
-PostgresQL schema -> Postgraphile -> GraphQLAPI
+* PostgresQL schema -> Postgraphile -> GraphQLAPI
+
 or:
-PostgresQL schema -> PostgREST -> REST API
+
+* PostgresQL schema -> PostgREST -> REST API
 
 ## Features
 
@@ -14,6 +16,7 @@ PostgresQL schema -> PostgREST -> REST API
 * CMS system (??)
 * payment system (??)
 * Blockchain functions (??)
+* Newsletter management (???)
 
 ## TODO
 
@@ -28,10 +31,10 @@ PostgresQL schema -> PostgREST -> REST API
 npm i
 ```
 
-Create database.
-Edit .env or .env.development
-Modify schema inside db/createTables.js if needed.
-Create tables:
+* Create database.
+* Edit .env or .env.development
+* Modify schema inside db/createTables.js if needed.
+* Create tables:
 
 ```bash
 cd db/
