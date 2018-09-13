@@ -9,13 +9,28 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ---------------------------------------------------------------------------
+-- Referral system
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS invitations(
+    id SERIAL PRIMARY KEY,
+    link TEXT,
+    senderId TEXT,
+    sendermsg TEXT,
+    senderName TEXT,
+    receiverId TEXT,
+    created_at TIMESTAMP DEFAULT current_timestamp,
+    updated_at TIMESTAMP
+);
+
+-- ---------------------------------------------------------------------------
 -- Users
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS basic_auth.users (
     id uuid PRIMARY KEY default uuid_generate_v1mc(),
     email TEXT UNIQUE CHECK (email ~* '^.+@.+\..+$'),
     password TEXT NOT NULL,
-    link TEXT,
+    link integer NOT NULL REFERENCES invitations(id),
     role name NOT NULL,
     verified BOOLEAN NOT NULL DEFAULT false,
     first_name TEXT CHECK (char_length(first_name) < 80),
@@ -60,7 +75,7 @@ CREATE TRIGGER user_updated_at BEFORE UPDATE
 -- ---------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS content.authors (
-    id uuid PRIMARY KEY default uuid_generate_v1mc(),
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
     first_name text CHECK (char_length(first_name) < 80),
     last_name text CHECK (char_length(last_name) < 80),
     bio text DEFAULT '',
@@ -166,7 +181,7 @@ CREATE CONSTRAINT TRIGGER ensure_user_role_exists
 CREATE OR REPLACE FUNCTION basic_auth.encrypt_password() RETURNS trigger LANGUAGE plpgsql AS
 $$
     BEGIN
-        IF tg_op = 'INSERT' or new.password <> old.password then
+        IF tg_op = 'INSERT' OR new.password <> old.password THEN
             new.password = crypt(new.password, gen_salt('bf', 8));
         END IF;
         RETURN new;

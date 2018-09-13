@@ -10,6 +10,15 @@ const fromEmail = 'info@dd.dd.com'
 const authenticatorPassword = process.env.AUTHENTICATOR_PASSWORD
 const jwtSecret = process.env.JWT_SECRET
 
+const providers = ['twitter', 'google', 'facebook', 'github', 'linkedin']
+const callbacks = providers.map(provider => {
+  return process.env.NODE_ENV === 'production'
+    ? `https://api.blueblood.ltd/oauth/${provider}/callback`
+    : `http://127.0.0.1:8080/oauth/${provider}/callback`
+})
+
+const [twitterURL, googleURL, facebookURL, githubURL, linkedinURL] = callbacks
+
 const emailConfig = {
   host: 'smtp.ethereal.email',
   port: 587,
@@ -28,32 +37,32 @@ const db = {
   port: 5432
 }
 
-exports.TWITTER_CONFIG = {
+const TWITTER_CONFIG = {
   consumerKey: process.env.TWITTER_KEY,
   consumerSecret: process.env.TWITTER_SECRET,
   callbackURL: twitterURL
 }
 
-exports.GOOGLE_CONFIG = {
+const GOOGLE_CONFIG = {
   clientID: process.env.GOOGLE_KEY,
   clientSecret: process.env.GOOGLE_SECRET,
   callbackURL: googleURL
 }
 
-exports.FACEBOOK_CONFIG = {
+const FACEBOOK_CONFIG = {
   clientID: process.env.FACEBOOK_KEY,
   clientSecret: process.env.FACEBOOK_SECRET,
   profileFields: ['id', 'emails', 'name', 'picture.width(250)'],
   callbackURL: facebookURL
 }
 
-exports.GITHUB_CONFIG = {
+const GITHUB_CONFIG = {
   clientID: process.env.GITHUB_KEY,
   clientSecret: process.env.GITHUB_SECRET,
   callbackURL: githubURL
 }
 
-exports.LINKEDIN_CONFIG = {
+const LINKEDIN_CONFIG = {
   clientID: process.env.LINKEDIN_KEY,
   clientSecret: process.env.LINKEDIN_SECRET,
   callbackURL: linkedinURL

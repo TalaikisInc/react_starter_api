@@ -1,12 +1,12 @@
 const nodemailer = require('nodemailer')
-const { siteTitle, fromEmail, emailConfig } = require('../env')
+const { siteTitle, fromEmail, emailConfig, apiUrl } = require('../env')
 const transporter = nodemailer.createTransport(emailConfig)
 
-const getInvite = (_url, _from, _to, _link) => {
+const getInvite = (_from, _to, _link) => {
+    const clientUrl = `${apiUrl}/invite/${_from}-${_link}`
     return {
       from: `'${siteTitle}' <${fromEmail}>`,
       to: _to,
-      clientUrl: `${_url}/invite/${_from}-${_link}`,
       subject: `You have been Invited to ${siteTitle}`,
       html: '<p> Your invitation link is: <a href=' + clientUrl + `'> ${clientUrl}</a>`
     }
@@ -39,4 +39,9 @@ const sendEmail = (_body) => {
   })
 }
 
-module.exports = sendEmail
+module.exports = {
+  sendEmail,
+  getInvite,
+  getWelcome,
+  resetPassword
+}

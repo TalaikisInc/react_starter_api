@@ -1,16 +1,10 @@
 # React Starter GraphQL API
 
-## Status
+## How that does work
 
--- In development, don't use due to breaking changes.
-
-## TODO
-
-* change role
-* change email
-* oauth signup/signin
-* return user data after login and update
-* autogenerate ref. link
+PostgresQL schema -> Postgraphile -> GraphQLAPI
+or:
+PostgresQL schema -> PostgREST -> REST API
 
 ## Features
 
@@ -21,9 +15,13 @@
 * payment system (??)
 * Blockchain functions (??)
 
-## How that does work
+## TODO
 
-Postgres schema -> Postgraphile -> GraphQLAPI
+* change role
+* change email
+* oauth signup/signin
+* return user data after login and update
+* autogenerate ref. link
 
 ## How to prepare
 
