@@ -2,11 +2,15 @@
 
 ## How that does work
 
-* PostgresQL schema -> Postgraphile -> GraphQLAPI
+* PostgresQL schema -> Postgraphile -> GraphQL API
 
 or:
 
 * PostgresQL schema -> PostgREST -> REST API
+
+or:
+
+* PostgresQL schema -> REST API -> GraphQL -> GraphQLAPI (not implemented)
 
 ## Features
 

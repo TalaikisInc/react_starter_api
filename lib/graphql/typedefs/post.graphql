@@ -1,0 +1,23 @@
+export default `
+  type Post {
+    id: String,
+    headline: String!,
+    body: String!,
+    imageUrl: String!,
+    topic: String
+  }
+
+  type Query {
+    allPosts: [Post!]!,
+    findPost(id: String!): Post!
+  }
+
+  type Mutation {
+    createPost(
+      headline: String!,
+      body: String!,
+      imageUrl: String!
+      topic: String
+      ): Post!
+  }
+`

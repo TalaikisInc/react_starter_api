@@ -93,6 +93,7 @@ CREATE TABLE content.posts (
     -- author integer NOT NULL REFERENCES content.authors(id),
     headline text NOT NULL CHECK (char_length(headline) < 280),
     body text,
+    imageUrl text,
     topic integer NOT NULL REFERENCES content.topics(id),
     created_at TIMESTAMP DEFAULT current_timestamp,
     updated_at TIMESTAMP DEFAULT current_timestamp
