@@ -17,9 +17,10 @@ PostgresQL schema -> PostgREST -> REST API
 
 ## TODO
 
-* oauth signup/signin
-* return user data after login and update
 * JWT verify.
+* oauth signup/signin
+* ref sys
+* cms sys
 
 ## How to prepare
 

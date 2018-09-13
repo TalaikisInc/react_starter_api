@@ -340,10 +340,13 @@ $$;
 -- Update user
 -- ---------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION update_user_info(mail text, password text, firstName text, lastName text, about text) RETURNS void LANGUAGE plpgsql AS
+CREATE OR REPLACE FUNCTION update_user_info(mail text, password text, firstName text, lastName text, about text) RETURNS json LANGUAGE plpgsql AS
 $$
     DECLARE
+        _id uuid;
         _role name;
+        _signed text;
+        result json;
     BEGIN
         SELECT basic_auth.authenticate_user(mail, password) INTO _role;
         IF _role IS NULL THEN
@@ -354,6 +357,17 @@ $$
             last_name = update_user_info.lastName,
             bio = update_user_info.about
             WHERE email = update_user_info.mail;
+        SELECT id FROM basic_auth.users AS u WHERE u.email = mail LIMIT 1 INTO _id;
+        SELECT json_build_object(
+            'id', _id,
+            'email', _email,
+            'expiry', extract(epoch from now())::integer + 60*60
+            ) INTO _obj;
+        SELECT sign(_obj, '${jwtSecret}') INTO _signed;
+        SELECT json_build_object(
+            'token', _signed
+            )  INTO result;
+        RETURN result;
     END;
 $$;
 
