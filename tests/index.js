@@ -180,19 +180,17 @@ describe('user management', () => {
     });
     done();
   });
-
-  /*
-  describe('existing users', () => {
-    it('change email available for anyone', (done) => {
-    });
-
-    it('change role not available for ordinary users', (done) => {
-    })
-  });
-  */
 });
 
 /*describe('cms', () => {
+  it('creates post', (done) => {
+  });
+
+  it('creates vote', (done) => {
+  });
+
+  it('lists posts', (done) => {
+  });
 });
 
 describe('referral system', () => {

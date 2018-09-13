@@ -17,11 +17,9 @@ PostgresQL schema -> PostgREST -> REST API
 
 ## TODO
 
-* change role
-* change email
 * oauth signup/signin
 * return user data after login and update
-* autogenerate ref. link
+* JWT verify.
 
 ## How to prepare
 
