@@ -41,7 +41,7 @@ node createTables.js
 
 ## How to start
 
-### Run API server:
+### Run API server
 
 ```bash
 npm install -g postgraphile

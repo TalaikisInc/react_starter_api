@@ -2,7 +2,7 @@ const path = require('path')
 const fs = require('fs')
 
 const write = (name, contents) => {
-  fs.writeFile(`../tests/${name}`, contents, (err) => {
+  fs.writeFile(`${path.resolve(__dirname, name)}`, contents, (err) => {
     if (err) {
       console.log(err)
     }
@@ -10,11 +10,11 @@ const write = (name, contents) => {
 }
 
 const read = (name) => {
-  return fs.readFileSync(`../tests/${name}`)
+  return fs.readFileSync(`${path.resolve(__dirname, name)}`)
 }
 
 const del = (name) => {
-  fs.unlinkSync(`../tests/${name}`)
+  fs.unlinkSync(`${path.resolve(__dirname, name)}`)
 }
 
 module.exports = {

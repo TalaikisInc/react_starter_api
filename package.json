@@ -6,7 +6,8 @@
   "scripts": {
     "test": "mocha tests/index.js",
     "start": "postgraphile -c postgres://postgres:dsdsdasd@127.0.0.1:5432/blue -j --watch",
-    "pubsub": "node utils/pubsub.js"
+    "pubsub": "node utils/pubsub.js",
+    "tables": "node db/createTables.js"
   },
   "author": "Tadas Talaikis <info@talaikis.com>",
   "license": "ISC",

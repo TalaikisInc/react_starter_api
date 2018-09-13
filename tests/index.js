@@ -26,33 +26,6 @@ describe('user management', () => {
       });
   });
 
-  it('multi user signup is okay', (done) => {
-    for (let i = 0; i < 100; i++) {
-      request.post('graphql')
-        .send({ query: `mutation { signup(input: { email: "${faker.internet.email()}", password: "${faker.internet.password()}" }) { clientMutationId } }` })
-        .expect(200)
-        .end((err, res) => {
-          if (err) return done(err);
-          res.should.have.property('body');
-          res.body.data.should.have.property('signup');
-        });
-    }
-    done();
-  });
-
-  it('doesn\'t allow to register for existing user', (done) => {
-    const email = 'foo2@example.co.uk';
-    const password = 'test';
-    request.post('graphql')
-      .send({ query: `mutation { signup(input: { email: "${email}", password: "${password}" }) { clientMutationId } }` })
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
-        res.body.errors[0].should.have.property('message');
-        done();
-      });
-  });
-
   it('signup works', (done) => {
     const email = 'foo2@example.co.uk';
     const password = 'test';
@@ -75,6 +48,20 @@ describe('user management', () => {
       .end((err, res) => {
         if (err) return done(err);
         res.body.data.should.have.property('validate');
+        done();
+      });
+  });
+
+  it('doesn\'t allow to register for existing user', (done) => {
+    const email = 'foo2@example.co.uk';
+    const password = 'test';
+    request.post('graphql')
+      .send({ query: `mutation { signup(input: { email: "${email}", password: "${password}" }) { clientMutationId } }` })
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err);
+        res.body.errors[0].should.have.property('message');
+        done();
       });
   });
 
@@ -86,7 +73,7 @@ describe('user management', () => {
       .expect(200)
       .end((err, res) => {
         if (err) return done(err);
-        res.login.json.should.have.property('token');
+        res.body.data.login.json.should.have.property('token');
         done();
       });
   });
@@ -98,9 +85,7 @@ describe('user management', () => {
       .expect(200)
       .end((err, res) => {
         if (err) return done(err);
-        console.log('res.body.requestPasswordReset');
-        console.log(res.body.requestPasswordReset);
-        res.body.requestPasswordReset.should.have.property('token');
+        res.body.data.should.have.property('requestPasswordReset');
         done();
       });
   });
@@ -109,15 +94,12 @@ describe('user management', () => {
     const email = 'foo2@example.co.uk';
     const newPassword = 'test2';
     const token = fs.readFileSync(path.resolve(__dirname, './last_reset_token'));
-
     request.post('graphql')
       .send({ query: `mutation {resetPassword(input: {email: "${email}", token:"${token}", password:"${newPassword}"}) {clientMutationId}}` })
       .expect(200)
       .end((err, res) => {
         if (err) return done(err);
-        console.log('res.body.resetPassword');
-        console.log(res.body.resetPassword);
-        res.body.resetPassword.should.have.property('token');
+        res.body.data.should.have.property('resetPassword');
         done();
       });
   });
@@ -130,7 +112,7 @@ describe('user management', () => {
       .expect(200)
       .end((err, res) => {
         if (err) return done(err);
-        res.login.json.should.have.property('token');
+        res.body.data.login.json.should.have.property('token');
         done();
       });
   });
@@ -161,7 +143,7 @@ describe('user management', () => {
     const email = 'foo2@example.co.uk';
     const password = 'test2';
     request.post('graphql')
-      .send({ query: `mutation {updateUserInfo(input: {mail: "${email}", password: "${password}", firstname: "First", lastname: "Last", _about: "About me"}) {clientMutationId}}` })
+      .send({ query: `mutation {updateUserInfo(input: {mail: "${email}", password: "${password}", firstname: "First", lastname: "Last", about: "About me"}) {clientMutationId}}` })
       .expect(200)
       .end((err, res) => {
         if (err) return done(err);
@@ -178,36 +160,47 @@ describe('user management', () => {
       .expect(200)
       .end((err, res) => {
         if (err) return done(err);
-        res.login.json.should.have.property('token');
+        res.body.data.should.have.property('deleteUserAccount');
         done();
       });
+  });
+
+  it('benchmarks run', (done) => {
+    const service = {
+      server: `${url}`,
+    };
+    
+    const routes = {
+      // route: { name: 'Registration', route: 'graphql', method: 'post', data: { query: `mutation { signup(input: { email: "${faker.internet.email()}", password: "${faker.internet.password()}" }) { clientMutationId } }` } },
+      route: { name: 'All users', route: 'graphql', method: 'post', data: { query: '{ allUsers { nodes { email } } }' } },
+    };
+    
+    apiBenchmark.measure(service, routes, (err, res) => {
+      console.log(`Mean for ${res.server.route.name}: ${res.server.route.stats.mean}`);
+    });
+    done();
   });
 
   /*
   describe('existing users', () => {
     it('change email available for anyone', (done) => {
-    })
+    });
 
     it('change role not available for ordinary users', (done) => {
     })
-  })*/
+  });
+  */
 });
 
 /*describe('cms', () => {
-})
+});
+
+describe('referral system', () => {
+});
 
 describe('blockchain', () => {
+});
+
+describe('stripe', () => {
 })
 */
-
-const service = {
-  server: `${url}`,
-};
-
-const routes = {
-  route: { name: 'Registration', route: 'graphql', method: 'post', data: { query: `mutation { signup(input: { email: "${faker.internet.email()}", password: "${faker.internet.password()}" }) { clientMutationId } }` } },
-};
-
-apiBenchmark.measure(service, routes, (err, res) => {
-  console.log(`Mean for ${res.server.route.name}: ${res.server.route.stats.mean}`);
-});

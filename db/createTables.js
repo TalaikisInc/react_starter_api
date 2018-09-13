@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS basic_auth.users (
     id uuid PRIMARY KEY default uuid_generate_v1mc(),
     email TEXT UNIQUE CHECK (email ~* '^.+@.+\..+$'),
     password TEXT NOT NULL,
-    link integer NOT NULL REFERENCES invitations(id),
+    link TEXT,
     role name NOT NULL,
     verified BOOLEAN NOT NULL DEFAULT false,
     first_name TEXT CHECK (char_length(first_name) < 80),
@@ -347,7 +347,7 @@ $$
     DECLARE
         _role name;
     BEGIN
-        SELECT basic_auth.authenticate_user(_email, password) INTO _role;
+        SELECT basic_auth.authenticate_user(mail, password) INTO _role;
         IF _role IS NULL THEN
             RAISE invalid_password USING message = 'Invalid role.';
         END IF;
