@@ -41,20 +41,26 @@ node createTables.js
 
 ## How to start
 
-Run API server:
+### Run API server:
+
 ```bash
 npm install -g postgraphile
 postgraphile -c postgres://postgres:dsdsdasd@127.0.0.1:5432/blue -j --watch
 
 # For all CLI options:
 # https://www.graphile.org/postgraphile/usage-cli/
+
+# OR:
+npm run start
 ```
 
-Run Postgres PubSub service:
+### Run Postgres PubSub service:
 
 ```bash
 cd utils/
 node pubsub.js
+# OR:
+npm run pubsub
 ```
 
 OR use build.sh
@@ -161,6 +167,10 @@ mutation {
 ```
 
 ## Tests
+
+1. Create test database and edit appropirate .env file.
+2. Graphile API and pubsub listener should be running.
+3. Then:
 
 ```bash
 npm run test

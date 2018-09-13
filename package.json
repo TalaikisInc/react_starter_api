@@ -4,7 +4,9 @@
   "description": "GraphQL API for React Starter.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha tests/index.js"
+    "test": "mocha tests/index.js",
+    "start": "postgraphile -c postgres://postgres:dsdsdasd@127.0.0.1:5432/blue -j --watch",
+    "pubsub": "node utils/pubsub.js"
   },
   "author": "Tadas Talaikis <info@talaikis.com>",
   "license": "ISC",

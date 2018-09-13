@@ -10,11 +10,11 @@ const write = (name, contents) => {
 }
 
 const read = (name) => {
-  return fs.readFileSync(`../logs/${name}`)
+  return fs.readFileSync(`../tests/${name}`)
 }
 
 const del = (name) => {
-  fs.unlinkSync(`../logs/${name}`)
+  fs.unlinkSync(`../tests/${name}`)
 }
 
 module.exports = {
