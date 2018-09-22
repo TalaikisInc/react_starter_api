@@ -1,3 +1,5 @@
+const lanbda = false
+
 const express = require('express')
 const bodyParser = require('body-parser')
 const { graphqlExpress, graphiqlExpress } = require('apollo-server-express')
@@ -23,6 +25,7 @@ const envLoc = process.env.NODE_ENV === 'production' ? '.env' : '.env.developmen
 require('dotenv').config({ path: envLoc })
 const { sendEmail } = require('../utils/email')
 const logStream = fs.createWriteStream(path.join(__dirname, 'logs', 'access.log'), { flags: 'a' })
+const awsServerlessExpress = require('aws-serverless-express')
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -97,21 +100,19 @@ if (process.env.NODE_ENV === 'development') {
   }));
 }
 
+if (lambda === true) {
+  const server = awsServerlessExpress.createServer(app)
+  exports.handler = (event, context) => awsServerlessExpress.proxy(server, event, context)
+} else {
+  const server = http.createServer(app)
+  const io = socketio(server)
+  app.set('io', io)
 
-/*
-backup from old API
-
-const server = http.createServer(app)
-
-const io = socketio(server)
-app.set('io', io)
-
-const PORT = process.env.API_PORT ? process.env.API_PORT : 8080
-server.listen(PORT, '0.0.0.0', (err) => {
-  if (err) {
-    console.log(err)
-  }
-  console.info(`==> listening on http://localhost:${PORT}.`)
-})
-
-*/
+  const PORT = process.env.API_PORT ? process.env.API_PORT : 8080
+  server.listen(PORT, '0.0.0.0', (err) => {
+    if (err) {
+      console.log(err)
+    }
+    console.info(`==> listening on http://localhost:${PORT}.`)
+  })
+}
